@@ -48,7 +48,7 @@ INNER JOIN products
 USING (product_id)
 INNER JOIN suppliers
 USING(supplier_id)
-GROUP BY  supplier_id, company_name
+GROUP BY supplier_id, company_name
 ORDER BY total_products_delivered DESC;
 
 /*
