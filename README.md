@@ -15,6 +15,7 @@ This project analyzes the Northwind database to uncover valuable insights about 
 3. Find employees with the longest tenure at the company.
 4. Analyze the number of orders placed by customers from various countries.
 5. Explore advanced metrics such as top customers by spending, quarterly sales, and supplier performance.
+6. Rank products by sales value within categories using window functions.
 
 ---
 
@@ -52,7 +53,6 @@ LIMIT 10;
 | 62         | Tarte au sucre         | 1083           |
 | 2          | Chang                  | 1057           |
 
-![Top-Selling Products](assets/basic_queries/1.png)
 *Bar graph visualizing the top 10 best-selling products by units sold; ChatGPT generated this graph from SQL query results.*
 
 ### 2. Order Count by Customer 📑💳🌍
@@ -81,7 +81,6 @@ ORDER BY order_count DESC;
 | HUNGO       | Hungry Owl All-Night Grocers | 19          |
 | FOLKO       | Folk och fä HB               | 19          |
 
-![Order Count by Customer](assets/basic_queries/2.png)
 *Bar graph showing the number of orders by the top 10 customers; ChatGPT generated this graph from SQL query results.*
 
 ### 3. Employees with the Longest Tenure 👷🏻‍♂️🕰
@@ -106,6 +105,8 @@ ORDER BY NOW()::date - hire_date DESC;
 | Fuller Andrew    | 32 years and 5 months |
 | Peacock Margaret | 31 years and 8 months |
 | Buchanan Steven  | 31 years and 2 months |
+
+*Bar graph illustrating the tenure of employees with the longest service; ChatGPT generated this graph from SQL query results.*
 
 ### 4. Orders by Country 🇺🇳📑
 
@@ -133,7 +134,6 @@ ORDER BY order_count DESC;
 | France  | 77          |
 | UK      | 56          |
 
-![Orders by Country](assets/basic_queries/3.png)
 *Bar graph displaying the number of orders by country; ChatGPT generated this graph from SQL query results.*
 
 ---
@@ -169,7 +169,6 @@ LIMIT 5;
 | RATTC       | Rattlesnake Canyon Grocery   | USA     | 51098                |
 | HUNGO       | Hungry Owl All-Night Grocers | Ireland | 49980                |
 
-![Top Customers by Spending](assets/intermediate_queries/1.png)
 *Bar graph showing the top 5 customers by total spending; ChatGPT generated this graph from SQL query results.*
 
 ### 2. Quarterly Sales Revenue 🔄🎨💳
@@ -198,7 +197,6 @@ ORDER BY year, quarter;
 | 1997 | 2       | 143177              |
 | 1997 | 3       | 153938              |
 
-![Quarterly Sales Revenue](assets/intermediate_queries/2.png)
 *Line chart depicting quarterly sales revenue over time; ChatGPT generated this graph from SQL query results.*
 
 ### 3. Average Order Value 📊💵📆
@@ -227,7 +225,6 @@ ORDER BY year, month;
 | 1996 | 10    | 513.91                    |
 | 1996 | 11    | 690.91                    |
 
-![Average Order Value](assets/intermediate_queries/3.png)
 *Line chart showing the average order value by month; ChatGPT generated this graph from SQL query results.*
 
 ### 4. Top Suppliers by Products Delivered 🚛📦
@@ -258,8 +255,58 @@ ORDER BY total_products_delivered DESC;
 | 28          | Gai pâturage                      | 3073                     |
 | 15          | Norske Meierier                   | 2526                     |
 
-![Top Suppliers by Products Delivered](assets/intermediate_queries/4.png)
 *Bar graph highlighting the top suppliers by total products delivered; ChatGPT generated this graph from SQL query results.*
+
+---
+## Advanced Level Tasks 🔧📚🌟
+
+### 1. Ranking Sales with Window Functions 🏆🔢
+
+**Task:**
+Rank products by total sales value within each category using window functions. Show the top three products per category.
+
+**Query:**
+
+```sql
+WITH total_sales AS (
+    SELECT product_id, SUM(unit_price * (1 - discount) * quantity) AS total_sale
+    FROM order_details
+    GROUP BY product_id
+    ORDER BY total_sale DESC
+),
+category_rank AS (
+    SELECT category_name, product_name, total_sale, 
+           RANK() OVER(PARTITION BY category_name ORDER BY total_sale DESC) as category_rank
+    FROM total_sales
+    INNER JOIN products USING (product_id)
+    INNER JOIN categories USING (category_id)
+)
+SELECT category_name, product_name, total_sale, category_rank
+FROM category_rank
+WHERE category_rank BETWEEN 1 AND 3;
+```
+
+**Results:**
+
+| Category Name  | Product Name                  | Total Sale (USD) | Category Rank |
+| -------------- | ----------------------------- | ---------------- | ------------- |
+| Beverages      | Côte de Blaye                 | 141396.74        | 1             |
+| Beverages      | Ipoh Coffee                   | 23526.70         | 2             |
+| Beverages      | Chang                         | 16355.96         | 3             |
+| Condiments     | Vegie-spread                  | 16701.10         | 1             |
+| Condiments     | Sirop d'érable                | 14352.60         | 2             |
+| Condiments     | Louisiana Fiery Hot Pepper    | 13869.89         | 3             |
+| Confections    | Tarte au sucre                | 47234.97         | 1             |
+| Confections    | Sir Rodney's Marmalade        | 22563.36         | 2             |
+| Confections    | Gumbär Gummibärchen           | 19849.14         | 3             |
+| Dairy Products | Raclette Courdavault          | 71155.70         | 1             |
+| Dairy Products | Camembert Pierrot             | 46825.48         | 2             |
+| Dairy Products | Mozzarella di Giovanni        | 24900.13         | 3             |
+| Grains/Cereals | Gnocchi di nonna Alice        | 42593.06         | 1             |
+| Grains/Cereals | Wimmers gute Semmelknödel     | 21957.97         | 2             |
+| Grains/Cereals | Singaporean Hokkien Fried Mee | 8575.00          | 3             |
+
+*Bar graph showing the top three products by sales value in each category; ChatGPT generated this graph from SQL query results.*
 
 ---
 
@@ -273,6 +320,7 @@ Working on this project helped me develop a deeper understanding of the followin
    - Mastered aggregate functions such as `SUM`, `AVG`, and `COUNT` to extract meaningful insights.
    - Gained experience with grouping and ordering data using `GROUP BY` and `ORDER BY` clauses.
    - Practiced working with date and time functions for tasks such as calculating employee tenure and analyzing sales trends.
+   - Understood the power of window functions like `RANK()` for advanced ranking tasks.
 
 2. **Data Visualization:**
 
@@ -297,6 +345,7 @@ Working on this project helped me develop a deeper understanding of the followin
 - **Customer Insights:** 📑 "Save-a-lot Markets" leads in order volume, reflecting strong engagement.
 - **Employee Tenure:** 👷🏻‍♂️ Janet Leverling stands out as the longest-serving employee, exemplifying commitment.
 - **Country Analysis:** 🌍 Germany and the USA are the top contributors to order volume, emphasizing their importance as key markets.
+- **Advanced Metrics:** 📊 Window functions effectively identified top-performing products within each category, enabling more granular insights.
 
 These findings provide a foundation for strategic decisions aimed at strengthening relationships with top customers, optimizing product offerings, and focusing on high-performing regions.
 
