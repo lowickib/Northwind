@@ -142,6 +142,25 @@ FROM customers_ntiles
 Detect seasonality in orders based on order dates.
 */
 
+WITH total_sales AS (
+SELECT 
+  order_id, 
+  order_date,
+  SUM(unit_price * (1 - discount) * quantity) AS total_sale
+FROM order_details
+INNER JOIN orders
+USING(order_id)
+GROUP BY order_id, order_date
+ORDER BY order_date 
+)
+
+SELECT 
+  EXTRACT(MONTH FROM order_date) AS order_month, 
+  SUM(total_sale) AS total_sale_by_month
+FROM total_sales
+GROUP BY EXTRACT(MONTH FROM order_date)
+ORDER BY order_month
+
 
 /*
 ###### RESULTS ######
@@ -1009,6 +1028,60 @@ Task 5 results:
     "company_name": "Centro comercial Moctezuma",
     "total_spending": 101,
     "customer_group": "low"
+  }
+]
+*/
+
+/*
+Task 6 results:
+[
+  {
+    "order_month": "1",
+    "total_sale_by_month": 155480.18037491423
+  },
+  {
+    "order_month": "2",
+    "total_sale_by_month": 137898.92233333248
+  },
+  {
+    "order_month": "3",
+    "total_sale_by_month": 143401.37510988378
+  },
+  {
+    "order_month": "4",
+    "total_sale_by_month": 176831.63464448866
+  },
+  {
+    "order_month": "5",
+    "total_sale_by_month": 72114.92025733425
+  },
+  {
+    "order_month": "6",
+    "total_sale_by_month": 36362.80233480245
+  },
+  {
+    "order_month": "7",
+    "total_sale_by_month": 78882.75264826637
+  },
+  {
+    "order_month": "8",
+    "total_sale_by_month": 72772.94475899849
+  },
+  {
+    "order_month": "9",
+    "total_sale_by_month": 82010.6425343369
+  },
+  {
+    "order_month": "10",
+    "total_sale_by_month": 104264.95072120604
+  },
+  {
+    "order_month": "11",
+    "total_sale_by_month": 89133.85397870216
+  },
+  {
+    "order_month": "12",
+    "total_sale_by_month": 116638.05895709821
   }
 ]
 */
