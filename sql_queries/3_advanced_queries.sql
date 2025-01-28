@@ -85,7 +85,7 @@ AND order_date <> '1998-05'
 Find all products whose names contain a specific pattern (e.g., "chocolate").
 */
 
-WITH chocolade_products AS(
+WITH chocolate_products AS(
 SELECT product_id
 FROM products
 WHERE product_name ILIKE ANY (ARRAY['%chocolate%', '%chocolade%', '%schokolade%'])
@@ -99,8 +99,8 @@ total_sales AS (
   ORDER BY total_sale DESC
 )
 SELECT
-  ROUND(SUM(CASE WHEN product_id IN (SELECT product_id FROM chocolade_products) THEN total_sale ELSE 0 END)) AS total_sale_chocolade,
-  ROUND(SUM(CASE WHEN product_id NOT IN (SELECT product_id FROM chocolade_products) THEN total_sale ELSE 0 END)) AS total_sale_non_chocolade
+  ROUND(SUM(CASE WHEN product_id IN (SELECT product_id FROM chocolate_products) THEN total_sale ELSE 0 END)) AS total_sale_chocolate,
+  ROUND(SUM(CASE WHEN product_id NOT IN (SELECT product_id FROM chocolate_products) THEN total_sale ELSE 0 END)) AS total_sale_non_chocolate
 FROM total_sales
 
 /*
